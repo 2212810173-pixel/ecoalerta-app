@@ -407,7 +407,7 @@ def calcular_indice_riesgo(puntaje_total: int) -> dict:
 st.markdown("## 📊 Dashboard de Fiscalización Ambiental")
 
 # Colocamos un botón para forzar la actualización de los datos
-if st.button("🔄 Actualizar Datos del Dashboard"):
+if st.button("🔄 Actualizar Datos"):
     st.cache_data.clear() # Borra la memoria caché de los 10 minutos
     st.rerun()            # Recarga la página para traer los datos frescos de Google Sheets
     
