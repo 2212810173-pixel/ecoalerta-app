@@ -456,7 +456,7 @@ def guardar_reporte(datos_fila: dict) -> bool:
 
         # NUEVO PASO: Limpiar la memoria caché para que la próxima lectura 
         # traiga los datos actualizados inmediatamente.
-        st.cache_data.clear()
+       # st.cache_data.clear()
 
         return True
     except Exception as e:
