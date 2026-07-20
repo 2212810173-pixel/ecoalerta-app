@@ -401,6 +401,16 @@ def calcular_indice_riesgo(puntaje_total: int) -> dict:
             ),
         }
 
+# ==========================================
+# SECCIÓN DEL DASHBOARD
+# ==========================================
+st.markdown("## 📊 Dashboard de Fiscalización Ambiental")
+
+# Colocamos un botón para forzar la actualización de los datos
+if st.button("🔄 Actualizar Datos del Dashboard"):
+    st.cache_data.clear() # Borra la memoria caché de los 10 minutos
+    st.rerun()            # Recarga la página para traer los datos frescos de Google Sheets
+    
 
 # ==============================================================================
 # [GSHEETS] FUNCIONES DE PERSISTENCIA EN GOOGLE SHEETS
@@ -456,7 +466,7 @@ def guardar_reporte(datos_fila: dict) -> bool:
 
         # NUEVO PASO: Limpiar la memoria caché para que la próxima lectura 
         # traiga los datos actualizados inmediatamente.
-       # st.cache_data.clear()
+        st.cache_data.clear()
 
         return True
     except Exception as e:
