@@ -412,15 +412,14 @@ def cargar_reportes() -> pd.DataFrame:
     """
     Lee todos los reportes almacenados en la hoja de Google Sheets.
 
-    Usa conn.read() con ttl=0 para obtener datos frescos (sin caché).
-    Si la hoja está vacía o no tiene datos, retorna un DataFrame vacío
-    con las columnas esperadas para evitar errores downstream.
+    Usa conn.read() con ttl="10m" para usar la memoria caché y evitar 
+    el error 429 de límite de peticiones de Google.
     """
     try:
         df = conn.read(
             worksheet=NOMBRE_HOJA,
             usecols=list(range(len(COLUMNAS_GSHEET))),  # Leer solo las columnas esperadas
-            ttl=0,  # Sin caché: siempre datos frescos
+            ttl="10m",  # Modificado: guarda los datos en caché por 10 minutos
         )
         # Eliminar filas completamente vacías (Google Sheets a veces las incluye)
         df = df.dropna(how="all")
@@ -432,23 +431,12 @@ def cargar_reportes() -> pd.DataFrame:
         # Si la hoja no existe, está vacía, o hay error de conexión
         return pd.DataFrame(columns=COLUMNAS_GSHEET)
 
-
 def guardar_reporte(datos_fila: dict) -> bool:
     """
     Guarda un nuevo reporte en Google Sheets.
-
-    Estrategia de append:
-      1. Lee todos los datos existentes de la hoja.
-      2. Concatena la nueva fila al final del DataFrame.
-      3. Sobrescribe toda la hoja con el DataFrame actualizado (conn.update).
-
-    conn.update() reemplaza todo el contenido de la hoja, por lo que
-    primero leemos los datos existentes para no perderlos.
-
-    Retorna True si la operación fue exitosa, False si hubo error.
     """
     try:
-        # Paso 1: Leer datos existentes
+        # Paso 1: Leer datos existentes (ahora usará caché si está disponible)
         df_existente = cargar_reportes()
 
         # Paso 2: Crear DataFrame con la nueva fila
@@ -465,6 +453,10 @@ def guardar_reporte(datos_fila: dict) -> bool:
             worksheet=NOMBRE_HOJA,
             data=df_actualizado,
         )
+
+        # NUEVO PASO: Limpiar la memoria caché para que la próxima lectura 
+        # traiga los datos actualizados inmediatamente.
+        st.cache_data.clear()
 
         return True
     except Exception as e:
